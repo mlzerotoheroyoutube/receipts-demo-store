@@ -51,9 +51,29 @@ class Cart:
                 return
         self.items.append(Item(item.sku, item.name, item.price_cents, item.qty))
 
-    def remove(self, sku: str) -> None:
-        """Remove a SKU's whole line from the cart."""
-        self.items = [line for line in self.items if line.sku != sku]
+    def remove(self, sku: str, qty: int | None = None) -> None:
+        """Remove a SKU from the cart.
+
+        With no qty, remove the SKU's whole line. With a qty, decrease
+        that line by qty units, removing the line when it reaches zero.
+        Raises KeyError if the SKU is not in the cart or if qty exceeds
+        the quantity in the cart.
+        """
+        if qty is not None and qty <= 0:
+            raise ValueError("qty must be positive")
+        for index, line in enumerate(self.items):
+            if line.sku != sku:
+                continue
+            if qty is None:
+                del self.items[index]
+            elif qty > line.qty:
+                raise KeyError(sku)
+            elif qty == line.qty:
+                del self.items[index]
+            else:
+                line.qty -= qty
+            return
+        raise KeyError(sku)
 
     def subtotal_cents(self) -> int:
         """Sum of price_cents * qty for every line."""

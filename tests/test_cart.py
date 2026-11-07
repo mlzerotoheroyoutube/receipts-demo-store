@@ -35,6 +35,74 @@ def test_remove_line():
     assert cart.subtotal_cents() == 2500
 
 
+def test_remove_without_qty_removes_whole_line():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=3))
+    cart.add(tee())
+    cart.remove("MUG")
+    assert [line.sku for line in cart.items] == ["TEE"]
+    assert cart.subtotal_cents() == 2500
+
+
+def test_remove_one_unit_decreases_qty():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=3))
+    cart.remove("MUG", 1)
+    assert len(cart.items) == 1
+    assert cart.items[0].qty == 2
+    assert cart.subtotal_cents() == 2400
+
+
+def test_remove_partial_qty():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=3))
+    cart.add(tee())
+    cart.remove("MUG", qty=2)
+    assert cart.items[0].sku == "MUG"
+    assert cart.items[0].qty == 1
+    assert cart.subtotal_cents() == 3700
+
+
+def test_remove_qty_reaching_zero_removes_line():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=2))
+    cart.add(tee())
+    cart.remove("MUG", 2)
+    assert [line.sku for line in cart.items] == ["TEE"]
+    assert cart.subtotal_cents() == 2500
+
+
+def test_remove_more_units_than_in_cart_raises():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=2))
+    with pytest.raises(KeyError):
+        cart.remove("MUG", 3)
+    assert len(cart.items) == 1
+    assert cart.items[0].qty == 2
+    assert cart.subtotal_cents() == 2400
+
+
+def test_remove_missing_sku_raises():
+    cart = Cart()
+    cart.add(mug())
+    with pytest.raises(KeyError):
+        cart.remove("TEE")
+    with pytest.raises(KeyError):
+        cart.remove("TEE", 1)
+    assert len(cart.items) == 1
+    assert cart.items[0].qty == 1
+
+
+def test_remove_non_positive_qty_raises():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=2))
+    with pytest.raises(ValueError):
+        cart.remove("MUG", 0)
+    with pytest.raises(ValueError):
+        cart.remove("MUG", -1)
+    assert cart.items[0].qty == 2
+
+
 def test_percent_coupon_single_item():
     cart = Cart()
     cart.add(tee())
