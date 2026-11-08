@@ -42,6 +42,31 @@ def test_percent_coupon_single_item():
     assert cart.discount_cents() == 250
 
 
+def test_percent_coupon_applies_to_every_line():
+    cart = Cart()
+    cart.add(mug())
+    cart.add(tee())
+    cart.apply_coupon("SAVE10")
+    assert cart.discount_cents() == 370
+
+
+def test_percent_coupon_includes_quantities():
+    cart = Cart()
+    cart.add(Item("MUG", "Mug", 1200, qty=2))
+    cart.add(tee())
+    cart.apply_coupon("SAVE10")
+    # Subtotal is 4900, so 10% off the whole subtotal is 490.
+    assert cart.discount_cents() == 490
+
+
+def test_percent_coupon_rounds_down():
+    cart = Cart()
+    cart.add(Item("ODD", "Odd priced", 1005))
+    cart.apply_coupon("SAVE10")
+    # 10% of 1005 is 100.5, rounded down to the cent.
+    assert cart.discount_cents() == 100
+
+
 def test_second_coupon_rejected():
     cart = Cart()
     cart.add(tee())
@@ -66,6 +91,12 @@ def test_shipping_charged_on_small_order():
 def test_free_shipping_on_big_order():
     cart = Cart()
     cart.add(Item("JKT", "Jacket", 8000))
+    assert cart.shipping_cents() == 0
+
+
+def test_free_shipping_at_exact_threshold():
+    cart = Cart()
+    cart.add(Item("BOX", "Box", 5000))
     assert cart.shipping_cents() == 0
 
 
