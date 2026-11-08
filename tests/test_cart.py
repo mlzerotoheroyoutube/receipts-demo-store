@@ -69,6 +69,26 @@ def test_free_shipping_on_big_order():
     assert cart.shipping_cents() == 0
 
 
+def test_free_shipping_on_exactly_50_dollars():
+    cart = Cart()
+    cart.add(Item("BOX", "Box", 5000))
+    assert cart.shipping_cents() == 0
+
+
+def test_shipping_charged_just_below_50_dollars():
+    cart = Cart()
+    cart.add(Item("BOX", "Box", 4999))
+    assert cart.shipping_cents() == 599
+
+
+def test_free_shipping_when_discounted_subtotal_is_exactly_50_dollars():
+    cart = Cart()
+    cart.add(Item("JKT", "Jacket", 6000))
+    cart.apply_coupon("TENOFF")
+    assert cart.subtotal_cents() - cart.discount_cents() == 5000
+    assert cart.shipping_cents() == 0
+
+
 def test_tax_rounds_half_up():
     cart = Cart()
     cart.add(Item("PEN", "Pen", 1006))  # 8% of 1006 = 80.48 -> 80
