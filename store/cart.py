@@ -84,7 +84,7 @@ class Cart:
         """Flat shipping under the free-shipping threshold."""
         if not self.items:
             return 0
-        if self.subtotal_cents() - self.discount_cents() > FREE_SHIPPING_THRESHOLD_CENTS:
+        if self.subtotal_cents() - self.discount_cents() >= FREE_SHIPPING_THRESHOLD_CENTS:
             return 0
         return SHIPPING_CENTS
 
