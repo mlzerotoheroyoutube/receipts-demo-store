@@ -72,10 +72,9 @@ class Cart:
         """Discount from the applied coupon, in cents (0 if none)."""
         if self.coupon is None or not self.items:
             return 0
-        if self.coupon.kind == "percent":
-            first = self.items[0]
-            return first.price_cents * first.qty * self.coupon.amount // 100
         subtotal = self.subtotal_cents()
+        if self.coupon.kind == "percent":
+            return subtotal * self.coupon.amount // 100
         if subtotal < self.coupon.min_subtotal_cents:
             return 0
         return min(self.coupon.amount, subtotal)
@@ -84,7 +83,7 @@ class Cart:
         """Flat shipping under the free-shipping threshold."""
         if not self.items:
             return 0
-        if self.subtotal_cents() - self.discount_cents() > FREE_SHIPPING_THRESHOLD_CENTS:
+        if self.subtotal_cents() - self.discount_cents() >= FREE_SHIPPING_THRESHOLD_CENTS:
             return 0
         return SHIPPING_CENTS
 
